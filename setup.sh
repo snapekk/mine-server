@@ -12,10 +12,12 @@ if [ -n "$PREFIX" ] && [[ "$PREFIX" == *"/com.termux"* ]]; then
     echo "-> Installing Termux dependencies..."
     pkg update -y
     pkg install openjdk-17 wget curl git screen -y
+    JAVA_FLAGS="-XX:+UseZGC -XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+PerfDisableSharedMem"
 else
     echo "-> Installing Ubuntu dependencies..."
     sudo apt update && sudo apt upgrade -y
     sudo apt install openjdk-21-jre-headless screen wget curl git unzip -y
+    JAVA_FLAGS="-XX:+UseZGC -XX:+ZGenerational -XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+PerfDisableSharedMem"
 fi
 
 echo "-> Creating server directory..."
@@ -56,19 +58,13 @@ EOF
 echo "-> Creating start script with ZGC..."
 cat <<EOF > start.sh
 #!/bin/bash
-java -Xms$RAM -Xmx$RAM \
--XX:+UseZGC \
--XX:+ZGenerational \
--XX:+AlwaysPreTouch \
--XX:+DisableExplicitGC \
--XX:+PerfDisableSharedMem \
--jar fabric-server-launch.jar nogui
+java -Xms$RAM -Xmx$RAM $JAVA_FLAGS -jar fabric-server-launch.jar nogui
 EOF
 
 chmod +x start.sh
 
 echo "==========================================="
-echo "===             Success!                ==="
+echo "===             Success!                 ==="
 echo "==========================================="
 echo "To start, type:"
 echo "cd $SERVER_DIR && screen -S mine ./start.sh"
