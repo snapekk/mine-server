@@ -2,7 +2,7 @@
 
 VERSION="1.20.4"
 RAM="6G"
-SERVER_DIR="~/minecraft_server"
+SERVER_DIR="$HOME/minecraft_server"
 GITHUB_USER="snapekk"
 REPO_NAME="mine-server"
 
