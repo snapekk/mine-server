@@ -71,9 +71,12 @@ online-mode=false
 network-compression-threshold=1024
 EOF
 
-echo "-> Injecting mods for $VERSION..."
-mkdir -p mods
+echo "-> Injecting mods and configs for $VERSION..."
+mkdir -p mods config
 cp -r temp_repo/mods/"$VERSION"/* ./mods/
+if [ -d "temp_repo/configs/$VERSION" ]; then
+    cp -r temp_repo/configs/"$VERSION"/* ./config/
+fi
 
 rm -rf temp_repo fabric-installer.jar
 
