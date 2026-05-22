@@ -71,26 +71,23 @@ online-mode=false
 network-compression-threshold=1024
 EOF
 
-echo "-> Injecting mods and configs for $VERSION..."
+echo "-> Injecting mods, configs, and branding for $VERSION..."
 mkdir -p mods config
+
+# Copia os mods da versão selecionada
 cp -r temp_repo/mods/"$VERSION"/* ./mods/
+
+# Copia as configurações customizadas, se existirem
 if [ -d "temp_repo/configs/$VERSION" ]; then
     cp -r temp_repo/configs/"$VERSION"/* ./config/
 fi
 
-rm -rf temp_repo fabric-installer.jar
+# Copia o ícone premium do servidor
+if [ -f "temp_repo/server-icon.png" ]; then
+    cp temp_repo/server-icon.png ./
+fi
 
-mkdir -p config
-cat <<EOF > config/c2me.toml
-[threadedWorldGen]
-allowThreadedFeatures = true
-reduceLockRadius = true
-[asyncScheduling]
-enabled = true
-[ioSystem]
-replaceImpl = true
-asyncMACThreads = 3
-EOF
+rm -rf temp_repo fabric-installer.jar
 
 echo "-> Creating startup script..."
 cat <<EOF > start.sh
