@@ -11,13 +11,13 @@ echo "==========================================="
 if [ -n "$PREFIX" ] && [[ "$PREFIX" == *"/com.termux"* ]]; then
     echo "-> Installing Termux dependencies..."
     pkg update -y
-    pkg install openjdk-17 wget curl git screen -y
+    pkg install openjdk-25 wget curl git screen -y
     RAM="4G"
     JAVA_FLAGS="-XX:+UseG1GC"
 else
     echo "-> Installing Ubuntu dependencies..."
     sudo apt update && sudo apt upgrade -y
-    sudo apt install openjdk-21-jre-headless screen wget curl git unzip -y
+    sudo apt install openjdk-25-jre-headless screen wget curl git unzip -y
     RAM="6G"
     JAVA_FLAGS="-XX:+UseZGC -XX:+ZGenerational -XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+PerfDisableSharedMem"
 fi
@@ -42,17 +42,24 @@ cd ../..
 for i in "${!VERSIONS[@]}"; do
     echo "[$i] - Minecraft ${VERSIONS[$i]}"
 done
+
+# Opção dinâmica para versão customizada
+CUSTOM_INDEX=${#VERSIONS[@]}
+echo "[$CUSTOM_INDEX] - Custom Version (Manual input)"
 echo "==========================================="
 
 read -p "Enter the desired version number: " SELECTION < /dev/tty
 
-if ! [[ "$SELECTION" =~ ^[0-9]+$ ]] || [ -z "${VERSIONS[$SELECTION]}" ]; then
+if [[ "$SELECTION" == "$CUSTOM_INDEX" ]]; then
+    read -p "Type the exact Minecraft version (e.g., 1.19.4): " VERSION < /dev/tty
+elif [[ "$SELECTION" =~ ^[0-9]+$ ]] && [ -n "${VERSIONS[$SELECTION]}" ]; then
+    VERSION="${VERSIONS[$SELECTION]}"
+else
     echo "Invalid option. Aborting setup."
     rm -rf temp_repo
     exit 1
 fi
 
-VERSION="${VERSIONS[$SELECTION]}"
 echo ""
 echo "-> Selected version: $VERSION. Starting engines..."
 
@@ -74,8 +81,12 @@ EOF
 echo "-> Injecting mods, configs, and branding for $VERSION..."
 mkdir -p mods config
 
-# Copia os mods da versão selecionada
-cp -r temp_repo/mods/"$VERSION"/* ./mods/
+# Copia os mods se a pasta existir no GitHub
+if [ -d "temp_repo/mods/$VERSION" ]; then
+    cp -r temp_repo/mods/"$VERSION"/* ./mods/
+else
+    echo "-> [WARNING] No pre-configured mods found for $VERSION. You will need to add them manually."
+fi
 
 # Copia as configurações customizadas, se existirem
 if [ -d "temp_repo/configs/$VERSION" ]; then
